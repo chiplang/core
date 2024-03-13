@@ -1,44 +1,52 @@
 const std = @import("std");
 
-/// Path to the main function to build `chip`.
-const chip_main = "src/main.zig";
-/// Name for the run command in `zig build <cmd>`.
-const run_cmd = "run";
-/// Name for the test command in `zig build <cmd>`.
-const test_cmd = "dev";
+const frontend = "chip";
+/// Zig library.
+const libname = "lib";
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
+    // Zig library.
+    const lib = b.addModule(libname, .{ .source_file = .{ .path = "src/lib/lib.zig" } });
 
     // Build `chip`.
     {
         // Release.
 
         const exe = b.addExecutable(.{
-            .name = "chip",
-            .root_source_file = .{ .path = chip_main },
+            .name = frontend,
+            .root_source_file = .{ .path = "src/main.zig" },
             .target = target,
             .optimize = .ReleaseFast,
         });
         b.installArtifact(exe);
 
-        // `zig build run -- arg1 arg2 ...`
+        // `zig build run_chip -- arg1 arg2 ...`
         const run = b.addRunArtifact(exe);
         run.step.dependOn(b.getInstallStep());
         if (b.args) |args| run.addArgs(args); // `-- arg1 arg2 ...`
 
-        // `zig build --help`
-        b.step(run_cmd, "Create executable and run immediately").dependOn(&run.step);
+        b.step( // `zig build --help`
+            "run_" ++ frontend,
+            "Create executable and run immediately",
+        ).dependOn(&run.step);
+
+        exe.addModule(libname, lib); // Add library.
 
         // Testing/debug.
 
-        // `zig build dev`
-        const dev = b.addRunArtifact(b.addTest(.{
-            .root_source_file = .{ .path = chip_main },
+        // `zig build test_chip`
+        const unit_tests = b.addTest(.{
+            .root_source_file = .{ .path = "src/unit-tests/test.zig" },
             .target = target,
             .optimize = .Debug,
-        }));
-        // `zig build --help`
-        b.step(test_cmd, "Create and run a test build").dependOn(&dev.step);
+        });
+        const testing = b.addRunArtifact(unit_tests);
+        b.step( // `zig build --help`
+            "test_" ++ frontend,
+            "Create and run a test build",
+        ).dependOn(&testing.step);
+
+        unit_tests.addModule(libname, lib); // Add library.
     }
 }
