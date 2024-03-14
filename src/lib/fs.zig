@@ -10,23 +10,23 @@ const IsBuffer = union(enum(u1)) {
     buf2,
 };
 
-/// `1kB`
-const bufsize = 1024;
 pub const File = struct {
     /// File descriptor.
     fd: ?fs.File = null,
 
     // Buffers and iters.
-    buf1: [bufsize / 2]u8 = undefined,
+    buf1: [bufsize]u8 = undefined,
     buf1_contents_len: usize = 0,
     buf1_i: usize = 0,
-    buf2: [bufsize / 2]u8 = undefined,
+    buf2: [bufsize]u8 = undefined,
     buf2_contents_len: usize = 0,
     buf2_i: usize = 0,
     /// Buffer switch flag: `buf1` | `buf2`.
     is_buf: IsBuffer = .buf1,
 
     const Self = @This();
+    /// `1kB`
+    const bufsize = 1024;
 
     /// Open file oriented to the handling of language scripts.
     pub fn open(cwd: *const fs.Dir, sub_path: []const u8, mode: OpenMode) (OpenError || ReadError)!File {
@@ -55,14 +55,14 @@ pub const File = struct {
     pub fn peek_byte(self: Self) ?u8 {
         return switch (self.is_buf) {
             .buf1 => blk: {
-                if (self.buf1_i >= self.buf1_contents_len) {
+                if (self.buf1_i >= self.buf1_contents_len) { // The next/other buffer.
                     if (self.buf2_contents_len == 0) return null;
                     break :blk self.buf2[0];
                 }
                 break :blk self.buf1[self.buf1_i];
             },
             .buf2 => blk: {
-                if (self.buf2_i >= self.buf2_contents_len) {
+                if (self.buf2_i >= self.buf2_contents_len) { // The next/other buffer.
                     if (self.buf1_contents_len == 0) return null;
                     break :blk self.buf1[0];
                 }
