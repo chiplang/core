@@ -51,11 +51,31 @@ pub const File = struct {
         }
     }
 
+    /// Gets the next byte in the file without advancing position.
+    pub fn peek_byte(self: Self) ?u8 {
+        return switch (self.is_buf) {
+            .buf1 => blk: {
+                if (self.buf1_i >= self.buf1_contents_len) {
+                    if (self.buf2_contents_len == 0) return null;
+                    break :blk self.buf2[0];
+                }
+                break :blk self.buf1[self.buf1_i];
+            },
+            .buf2 => blk: {
+                if (self.buf2_i >= self.buf2_contents_len) {
+                    if (self.buf1_contents_len == 0) return null;
+                    break :blk self.buf1[0];
+                }
+                break :blk self.buf2[self.buf2_i];
+            },
+        };
+    }
+
     /// Gets the next byte in the file by advancing the position.
     pub fn next_byte(self: *Self) ReadError!?u8 {
         return switch (self.is_buf) {
             .buf1 => blk: {
-                // End of buffer.
+                // End of buffer (1).
                 if (self.buf1_i >= self.buf1_contents_len) {
                     if (self.buf2_contents_len == 0) return null;
                     self.is_buf = .buf2;
@@ -72,7 +92,7 @@ pub const File = struct {
                 break :blk self.buf1[self.buf1_i - 1];
             },
             .buf2 => blk: {
-                // End of buffer.
+                // End of buffer (2).
                 if (self.buf2_i >= self.buf2_contents_len) {
                     if (self.buf1_contents_len == 0) return null;
                     self.is_buf = .buf1;
