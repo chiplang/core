@@ -10,6 +10,7 @@ const IsBuffer = union(enum(u1)) {
     buf2,
 };
 
+/// `1kB`
 const bufsize = 1024;
 pub const File = struct {
     /// File descriptor.
@@ -50,6 +51,7 @@ pub const File = struct {
         }
     }
 
+    /// Gets the next byte in the file by advancing the position.
     pub fn next_byte(self: *Self) ReadError!?u8 {
         return switch (self.is_buf) {
             .buf1 => blk: {
@@ -66,9 +68,8 @@ pub const File = struct {
                     break :blk self.buf2[0];
                 }
 
-                const byte = self.buf1[self.buf1_i];
                 self.buf1_i += 1;
-                break :blk byte;
+                break :blk self.buf1[self.buf1_i - 1];
             },
             .buf2 => blk: {
                 // End of buffer.
@@ -84,9 +85,8 @@ pub const File = struct {
                     break :blk self.buf1[0];
                 }
 
-                const byte = self.buf2[self.buf2_i];
                 self.buf2_i += 1;
-                break :blk byte;
+                break :blk self.buf2[self.buf2_i - 1];
             },
         };
     }
