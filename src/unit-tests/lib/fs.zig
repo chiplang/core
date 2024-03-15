@@ -13,17 +13,16 @@ test "File: open(...), close() and next_byte()" {
             var chunk = [5]u8{ 0, 0, 0, 0, 0 };
             var i: usize = 0;
             while (true) : (i += 1) {
-                if (file.next_byte()) |option| {
-                    if (option) |c| {
-                        if (i < 5) {
-                            chunk[i] = c;
+                if (file.peek_byte()) |c| {
+                    if (i < 5) {
+                        chunk[i] = c;
 
-                            if (i == 4) {
-                                try testing.expect(mem.eql(u8, &chunk, "Lorem"));
-                            }
+                        if (i == 4) {
+                            try testing.expect(mem.eql(u8, &chunk, "Lorem"));
                         }
-                    } else break;
-                } else |_| try testing.expect(false);
+                    }
+                } else break;
+                if (file.next_byte()) |_| {} else |_| try testing.expect(false);
             }
             try testing.expect(i == 18054); // `18054` is the byte size of the sample file.
         }

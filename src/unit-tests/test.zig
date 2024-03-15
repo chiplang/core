@@ -1,8 +1,9 @@
-const std = @import("std");
-const testing = std.testing;
+//! Unit tests for Zig `lib`.
 
-test "main" {
+test {
+    // Library.
     _ = @import("lib/fs.zig");
 
-    try std.testing.expect(true);
+    // Components.
+    _ = @import("cwd.zig");
 }

@@ -4,10 +4,12 @@ const frontend = "chip";
 /// Zig library.
 const libname = "lib";
 
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
-    // Zig library.
-    const lib = b.addModule(libname, .{ .source_file = .{ .path = "src/lib/lib.zig" } });
+    const lib = b.addModule( // Zig library.
+        libname,
+        .{ .root_source_file = .{ .path = "src/lib/lib.zig" } },
+    );
 
     // Build `chip`.
     {
@@ -31,7 +33,7 @@ pub fn build(b: *std.Build) void {
             "Create executable and run immediately",
         ).dependOn(&run.step);
 
-        exe.addModule(libname, lib); // Add library.
+        exe.root_module.addImport(libname, lib); // Add library.
 
         // Testing/debug.
 
@@ -47,6 +49,14 @@ pub fn build(b: *std.Build) void {
             "Create and run a test build",
         ).dependOn(&testing.step);
 
-        unit_tests.addModule(libname, lib); // Add library.
+        unit_tests.root_module.addImport(libname, lib); // Add library.
+        // Modules for unit tests.
+        {
+            const cwd = "cwd";
+            unit_tests.root_module.addImport(cwd, b.addModule(
+                cwd,
+                .{ .root_source_file = .{ .path = "src/cwd.zig" } },
+            ));
+        }
     }
 }
