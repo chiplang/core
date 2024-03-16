@@ -5,6 +5,8 @@ const OpenError = fs.File.OpenError;
 const ReadError = fs.File.ReadError;
 
 pub const File = struct {
+    const Self = @This();
+
     /// File descriptor.
     fd: ?fs.File = null,
 
@@ -17,8 +19,6 @@ pub const File = struct {
     buf2_i: usize = 0,
     /// Buffer switch flag: `buf1` | `buf2`.
     is_buf: IsBuffer = .buf1,
-
-    const Self = @This();
 
     /// `1kB`
     const bufsize = 1024;

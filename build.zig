@@ -4,7 +4,7 @@ const frontend = "chip";
 /// Zig library.
 const libname = "lib";
 
-pub fn build(b: *std.Build) !void {
+pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const lib = b.addModule( // Zig library.
         libname,

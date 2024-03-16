@@ -23,11 +23,11 @@ pub const Cwd = struct {
     const Self = @This();
 
     /// Opens the stream for the `cwd` directory and its subdirectories.
-    pub inline fn open(cwd: fs.Dir) OpenError!Self {
+    pub fn open(cwd: fs.Dir) !Self {
         return .{
-            .src = try cwd.openDir(src, .{}),
-            .cache = try cwd.openDir(cache, .{}),
-            .target = try cwd.openDir(target, .{}),
+            .src = try cwd.makeOpenPath(src, .{ .iterate = true }),
+            .cache = try cwd.makeOpenPath(cache, .{ .iterate = true }),
+            .target = try cwd.makeOpenPath(target, .{ .iterate = true }),
             .cwd = cwd,
         };
     }

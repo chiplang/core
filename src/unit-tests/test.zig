@@ -4,6 +4,5 @@ test {
     // Library.
     _ = @import("lib/fs.zig");
 
-    // Components.
     _ = @import("cwd.zig");
 }
